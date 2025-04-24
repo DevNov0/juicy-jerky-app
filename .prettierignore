@@ -1,0 +1,9 @@
+# Ignoruj build/output/cache složky
+.next/
+node_modules/
+.yarn/
+coverage/
+
+# Ignoruj další systémové nebo konfigurační soubory
+.pnp.*
+*.lock

@@ -1,13 +1,13 @@
 import { Product } from "@prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-export type CreateProductInput = Pick<Product, "name" | "price">;
+export type ProductCreateUpdateInput = Pick<Product, "name" | "price">;
 
 export function useAddProduct() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: async (newProduct: CreateProductInput) => {
+        mutationFn: async (newProduct: ProductCreateUpdateInput) => {
             const res = await fetch("/api/products", {
                 method: "POST",
                 headers: {

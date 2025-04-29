@@ -58,6 +58,20 @@
     background-color: var(--color-brand-active);
 }
 
+.button--variant-primary--color-danger {
+    background-color: var(--color-danger);
+    border: none;
+    color: white;
+}
+
+.is-hoverable.button--variant-primary--color-danger:hover {
+    background-color: var(--color-danger-hover);
+}
+
+.is-hoverable.button--variant-primary--color-danger:active {
+    background-color: var(--color-danger-active);
+}
+
 /* === Variant: Secondary === */
 .button--variant-secondary--color-default {
     background-color: white;

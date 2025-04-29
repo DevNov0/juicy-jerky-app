@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Product } from "@prisma/client";
 import { NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
@@ -13,7 +13,7 @@ export async function GET() {
 export async function POST(req: Request) {
     const body = await req.json();
 
-    const product = await prisma.product.create({
+    const product: Product = await prisma.product.create({
         data: {
             name: body.name,
             price: body.price,

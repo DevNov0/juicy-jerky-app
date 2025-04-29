@@ -1,64 +1,55 @@
 "use client";
 
-import { useAddProduct } from "@/app/api/hooks/use-add-product";
+import { useAddProduct } from "@/app/api/hooks/products/use-add-product";
+import { useUpdateProduct } from "@/app/api/hooks/products/use-update-product";
+import { isNotNil } from "@/app/utils/is-not-nil";
 import ProductList from "@/components/product-list";
-import { Button } from "@/components/ui/button/button";
+import { mapCreateProductInput, mapProductToFormValues } from "@/forms/product-create-update-form/mapper";
+import { ProductCreateUpdateForm } from "@/forms/product-create-update-form/product-create-update-form";
+import { ProductCreateUpdateFormValues } from "@/forms/product-create-update-form/types";
+import { Product } from "@prisma/client";
+import { useState } from "react";
 
-import React, { useState } from "react";
+export default function ProductPage() {
+    const [resetForm, setResetForm] = useState<(() => void) | null>(null);
 
-export default function Page() {
-    const [name, setName] = useState("");
-    const [price, setPrice] = useState(0);
+    const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-    const { mutate, isPending, isSuccess, isError, error } = useAddProduct();
+    const addProduct = useAddProduct();
+    const updateProduct = useUpdateProduct();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleCreate = (values: ProductCreateUpdateFormValues) => {
+        addProduct.mutate(mapCreateProductInput(values), {
+            onSuccess: () => {
+                resetForm?.();
+                setEditingProduct(null);
+            },
+        });
+    };
 
-        mutate(
-            { name, price },
+    const handleUpdate = (values: ProductCreateUpdateFormValues) => {
+        if (!editingProduct) return;
+        updateProduct.mutate(
+            { id: String(editingProduct.id), ...mapCreateProductInput(values) },
             {
-                onSuccess: () => {
-                    setName("");
-                    setPrice(0);
-                },
+                onSuccess: () => setEditingProduct(null),
             },
         );
     };
 
     return (
-        <main className="mx-auto max-w-md p-6">
-            <h1 className="mb-4 text-2xl font-bold">Přidat produkt</h1>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label className="mb-1 block">Název</label>
-                    <input
-                        type="text"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        className="w-full rounded border p-2"
-                        required
-                    />
-                </div>
-                <div>
-                    <label className="mb-1 block">Cena (Kč)</label>
-                    <input
-                        type="number"
-                        value={price}
-                        onChange={(e) => setPrice(parseInt(e.target.value))}
-                        className="w-full rounded border p-2"
-                        required
-                    />
-                </div>
-                <Button type="submit" isDisabled={isPending}>
-                    {isPending ? "Přidávám…" : "Přidat"}
-                </Button>
-                <Button>Bomby</Button>
-                {isSuccess && <p className="text-sm text-green-600">✅ Produkt přidán!</p>}
-                {isError && <p className="text-sm text-red-600">❌ {error?.message}</p>}
-            </form>
+        <div className="space-y-8 p-8">
+            <ProductCreateUpdateForm
+                defaultValues={isNotNil(editingProduct) ? mapProductToFormValues(editingProduct) : undefined}
+                onSubmit={isNotNil(editingProduct) ? handleUpdate : handleCreate}
+                onResetAvailable={(resetFn) => setResetForm(() => resetFn)}
+            />
 
-            <ProductList />
-        </main>
+            <ProductList
+                onEditProduct={setEditingProduct}
+                onCancelEdit={() => setEditingProduct(null)}
+                editingProductId={isNotNil(editingProduct) ? String(editingProduct.id) : null}
+            />
+        </div>
     );
 }
